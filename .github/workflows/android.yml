@@ -119,10 +119,15 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Build C# project
+      - name: Build C# project (dotnet)
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Build C# solutions (Godot)
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --path . --build-solutions
 
       - name: Verify project and import resources
         run: |
@@ -245,10 +250,15 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Build C# project
+      - name: Build C# project (dotnet)
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Build C# solutions (Godot)
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --path . --build-solutions
 
       - name: Verify project and import resources
         run: |
@@ -389,10 +399,15 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Build C# project
+      - name: Build C# project (dotnet)
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Build C# solutions (Godot)
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --path . --build-solutions
 
       - name: Verify project and import resources
         run: |
