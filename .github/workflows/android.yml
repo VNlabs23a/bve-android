@@ -51,7 +51,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           api-level: 34
-          ndk-version: '26.1.10909125'
+          ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
 
@@ -156,7 +156,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           api-level: 34
-          ndk-version: '26.1.10909125'
+          ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
 
@@ -279,7 +279,7 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           api-level: 34
-          ndk-version: '26.1.10909125'
+          ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
 
