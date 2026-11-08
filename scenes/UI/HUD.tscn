@@ -1,7 +1,6 @@
-[gd_scene load_steps=8 format=3 uid="//uid://h8j2k9m3n4p5"]
+[gd_scene load_steps=4 format=3 uid="//uid://h8j2k9m3n4p5"]
 
 [ext_resource type="Script" path="res://src/UI/HUD.cs" id="1"]
-[ext_resource type="FontFile" path="res://assets/fonts/roboto_bold.ttf" id="2"]
 
 [node name="HUD" type="Control"]
 script = ExtResource("1")
@@ -25,13 +24,11 @@ custom_minimum_size = Vector2(200, 0)
 font_size = 20
 horizontal_alignment = 1
 text = "Route Name"
-font = ExtResource("2")
 
 [node name="NextStation" type="Label" parent="TopBar/RouteInfo"]
 font_size = 16
 horizontal_alignment = 1
 text = "Next: Station Name"
-font = ExtResource("2")
 
 [node name="Spacer" type="Control" parent="TopBar"]
 h_size_flags = 6
@@ -44,13 +41,11 @@ custom_minimum_size = Vector2(150, 0)
 font_size = 48
 horizontal_alignment = 1
 text = "0"
-font = ExtResource("2")
 
 [node name="SpeedUnit" type="Label" parent="TopBar/SpeedDisplay"]
 font_size = 18
 horizontal_alignment = 1
 text = "km/h"
-font = ExtResource("2")
 
 [node name="Spacer2" type="Control" parent="TopBar"]
 h_size_flags = 6
@@ -66,7 +61,6 @@ custom_minimum_size = Vector2(60, 60)
 font_size = 18
 horizontal_alignment = 1
 text = "---"
-font = ExtResource("2")
 
 [node name="BottomBar" type="HBoxContainer" parent="."]
 layout_mode = 3
@@ -87,13 +81,11 @@ alignment = 1
 [node name="NotchLabel" type="Label" parent="BottomBar/LeftPanel/NotchDisplay"]
 font_size = 18
 text = "Notch: "
-font = ExtResource("2")
 
 [node name="NotchValue" type="Label" parent="BottomBar/LeftPanel/NotchDisplay"]
 font_size = 24
 horizontal_alignment = 1
 text = "0"
-font = ExtResource("2")
 
 [node name="BrakeDisplay" type="HBoxContainer" parent="BottomBar/LeftPanel"]
 alignment = 1
@@ -101,13 +93,11 @@ alignment = 1
 [node name="BrakeLabel" type="Label" parent="BottomBar/LeftPanel/BrakeDisplay"]
 font_size = 18
 text = "Brake: "
-font = ExtResource("2")
 
 [node name="BrakeValue" type="Label" parent="BottomBar/LeftPanel/BrakeDisplay"]
 font_size = 24
 horizontal_alignment = 1
 text = "0"
-font = ExtResource("2")
 
 [node name="ReverserDisplay" type="HBoxContainer" parent="BottomBar/LeftPanel"]
 alignment = 1
@@ -115,13 +105,11 @@ alignment = 1
 [node name="ReverserLabel" type="Label" parent="BottomBar/LeftPanel/ReverserDisplay"]
 font_size = 18
 text = "Reverser: "
-font = ExtResource("2")
 
 [node name="ReverserValue" type="Label" parent="BottomBar/LeftPanel/ReverserDisplay"]
 font_size = 24
 horizontal_alignment = 1
 text = "FWD"
-font = ExtResource("2")
 
 [node name="CenterPanel" type="VBoxContainer" parent="BottomBar"]
 h_size_flags = 6
@@ -133,13 +121,11 @@ alignment = 1
 font_size = 20
 horizontal_alignment = 1
 text = "12:34:56"
-font = ExtResource("2")
 
 [node name="DelayDisplay" type="Label" parent="BottomBar/CenterPanel/TimetableDisplay"]
 font_size = 20
 horizontal_alignment = 1
 text = "+0:00"
-font = ExtResource("2")
 
 [node name="RightPanel" type="VBoxContainer" parent="BottomBar"]
 alignment = 2
@@ -151,35 +137,28 @@ alignment = 2
 [node name="BrakePipeLabel" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = "BC: "
-font = ExtResource("2")
 
 [node name="BrakePipeValue" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = "5.0"
-font = ExtResource("2")
 
 [node name="MainResLabel" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = " MR: "
-font = ExtResource("2")
 
 [node name="MainResValue" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = "9.0"
-font = ExtResource("2")
 
 [node name="BrakeCylLabel" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = " BCyl: "
-font = ExtResource("2")
 
 [node name="BrakeCylValue" type="Label" parent="BottomBar/RightPanel/PressureDisplay"]
 font_size = 16
 text = "0.0"
-font = ExtResource("2")
 
 [node name="DebugDisplay" type="Label" parent="BottomBar/RightPanel"]
 font_size = 12
 horizontal_alignment = 2
 text = "Debug info"
-font = ExtResource("2")

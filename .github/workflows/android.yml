@@ -119,15 +119,17 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Verify project
-        run: |
-          godot --headless --version
-          godot --headless --path "${{ env.PROJECT_PATH }}" --check-only
-
       - name: Build C# project
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Verify project and import resources
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --version
+          godot --headless --path . --check-only
+          godot --headless --path . --import
 
       - name: Export Debug APK
         run: |
@@ -243,15 +245,17 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Verify project
-        run: |
-          godot --headless --version
-          godot --headless --path "${{ env.PROJECT_PATH }}" --check-only
-
       - name: Build C# project
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Verify project and import resources
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --version
+          godot --headless --path . --check-only
+          godot --headless --path . --import
 
       - name: Configure Keystore
         if: env.KEYSTORE_BASE64 != ''
@@ -385,15 +389,17 @@ jobs:
           restore-keys: |
             gradle-${{ runner.os }}-
 
-      - name: Verify project
-        run: |
-          godot --headless --version
-          godot --headless --path "${{ env.PROJECT_PATH }}" --check-only
-
       - name: Build C# project
         run: |
           cd "${{ env.PROJECT_PATH }}"
           dotnet build OpenBVE-Android.csproj -c Release
+
+      - name: Verify project and import resources
+        run: |
+          cd "${{ env.PROJECT_PATH }}"
+          godot --headless --version
+          godot --headless --path . --check-only
+          godot --headless --path . --import
 
       - name: Configure Keystore
         if: env.KEYSTORE_BASE64 != ''
