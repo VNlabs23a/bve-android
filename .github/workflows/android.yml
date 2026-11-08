@@ -54,6 +54,15 @@ jobs:
           ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
+          cache: gradle
+
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
+          ls -la "$ANDROID_HOME"/platforms/ || true
+          ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
 
       - name: Cache Godot
         id: cache-godot
@@ -159,6 +168,15 @@ jobs:
           ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
+          cache: gradle
+
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
+          ls -la "$ANDROID_HOME"/platforms/ || true
+          ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
 
       - name: Cache Godot
         id: cache-godot
@@ -282,6 +300,15 @@ jobs:
           ndk-version: '27.0.12077973'
           build-tools: '34.0.0'
           cmdline-tools: 'latest'
+          cache: gradle
+
+      - name: Verify Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
+          ls -la "$ANDROID_HOME"/platforms/ || true
+          ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
 
       - name: Cache Godot
         id: cache-godot
