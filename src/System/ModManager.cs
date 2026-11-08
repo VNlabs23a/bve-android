@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Godot;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 
 namespace OpenBVEAndroid.System
 {
@@ -319,14 +322,24 @@ namespace OpenBVEAndroid.System
             {
                 string extractPath = Path.Combine(OS.GetUserDataDir(), "mods", Path.GetFileNameWithoutExtension(zipPath));
 
-                // Extract using SharpCompress
+                // Extract using SharpCompress (updated API)
                 using var stream = File.OpenRead(zipPath);
-                var archive = SharpCompress.Archives.ArchiveFactory.Open(stream);
-                archive.WriteToDirectory(extractPath, new SharpCompress.Common.ExtractionOptions
+                var archive = ArchiveFactory.Open(stream);
+
+                // Extract all entries to directory
+                foreach (var entry in archive.Entries)
                 {
-                    ExtractFullPath = true,
-                    Overwrite = true
-                });
+                    if (!entry.IsDirectory)
+                    {
+                        string entryPath = Path.Combine(extractPath, entry.Key);
+                        Directory.CreateDirectory(Path.GetDirectoryName(entryPath));
+                        entry.WriteToFile(entryPath, new ExtractionOptions
+                        {
+                            ExtractFullPath = true,
+                            Overwrite = true
+                        });
+                    }
+                }
 
                 // Scan the new mod
                 var mod = LoadModFromDirectory("/mods/" + Path.GetFileNameWithoutExtension(zipPath));

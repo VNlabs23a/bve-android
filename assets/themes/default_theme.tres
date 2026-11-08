@@ -1,0 +1,16 @@
+[gd_resource type="Theme" load_steps=3 format=3 uid="//uid://theme_default_001"]
+
+[sub_resource type="FontFile" id="Font_roboto"]
+data = ExtResource("1")
+
+[resource]
+name = "Default Theme"
+default_base_color = Color(0.15, 0.15, 0.2, 1)
+default_font_color = Color(1, 1, 1, 1)
+default_font_size = 18
+default_font = SubResource("Font_roboto")
+default_font_shadow_color = Color(0, 0, 0, 0.5)
+default_font_shadow_offset = Vector2(1, 1)
+default_font_outline_size = 1
+
+[ext_resource type="FontFile" path="res://assets/fonts/roboto_bold.ttf" id="1"]

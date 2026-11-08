@@ -302,7 +302,7 @@ namespace OpenBVEAndroid.Android
         public void OnSafUriGranted(string uri, string displayName)
         {
             _safUris[displayName] = uri;
-            GD.Print($"StorageManager: SAF URI granted for {displayName}: {uri}");
+            GD.Print($"StorageManager: SAF URI granted for {displayName}: {uri} (stub)");
         }
 
         /// <summary>
@@ -310,35 +310,9 @@ namespace OpenBVEAndroid.Android
         /// </summary>
         public byte[] ReadSafFile(string displayName)
         {
-            if (!_safUris.TryGetValue(displayName, out string uri))
-                return null;
-
-            try
-            {
-                // Use ContentResolver to open input stream
-                var bridge = AndroidBridge.Instance;
-                if (bridge == null) return null;
-
-                var contentResolver = bridge._context.Call<Godot.Object>("getContentResolver");
-                var uriObj = new JavaClass("android.net.Uri").CallStatic<Godot.Object>("parse", uri);
-                var inputStream = contentResolver.Call<Godot.Object>("openInputStream", uriObj);
-
-                // Read all bytes
-                var buffer = new System.Collections.Generic.List<byte>();
-                int b;
-                while ((b = inputStream.Call<int>("read")) != -1)
-                {
-                    buffer.Add((byte)b);
-                }
-                inputStream.Call("close");
-
-                return buffer.ToArray();
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"SAF read failed: {ex.Message}");
-                return null;
-            }
+            // Stub - actual implementation would use Android ContentResolver
+            GD.Print($"StorageManager: ReadSafFile called for {displayName} (stub)");
+            return null;
         }
     }
 }

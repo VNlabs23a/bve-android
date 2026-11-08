@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using OpenBVEAndroid.System;
 
 namespace OpenBVEAndroid.UI
 {
@@ -140,7 +141,7 @@ namespace OpenBVEAndroid.UI
 
             // Camera label
             if (_cameraLabel != null && _simulation != null)
-                _cameraLabel.Text = _simulation.CameraMode.ToString().ToUpper();
+                _cameraLabel.Text = _simulation.CameraViewMode.ToString().ToUpper();
 
             // Pause visual
             if (_pauseBtn != null)
@@ -161,7 +162,7 @@ namespace OpenBVEAndroid.UI
 
         private void OnLightsPressed()
         {
-            _inputManager.CycleLights();
+            _inputManager.CycleLightsPublic();
         }
 
         private void OnCameraPressed()

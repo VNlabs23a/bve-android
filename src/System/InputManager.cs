@@ -15,11 +15,11 @@ namespace OpenBVEAndroid.System
         // Input state
         public Vector2 TouchMovement { get; private set; }
         public Vector2 TouchLook { get; private set; }
-        public float ThrottleAxis { get; private set; }
+        public float ThrottleAxis { get; set; }
         public bool EmergencyBrake { get; private set; }
         public bool HornPressed { get; private set; }
-        public int ReverserPosition { get; private set; }
-        public int LightState { get; private set; }
+        public int ReverserPosition { get; set; }
+        public int LightState { get; set; }
         public bool PausePressed { get; private set; }
         public bool CameraCyclePressed { get; private set; }
 
@@ -50,7 +50,7 @@ namespace OpenBVEAndroid.System
         public override void _EnterTree()
         {
             Instance = this;
-            Input.TouchScreenEnabled = true;
+            // TouchScreenEnabled is enabled by default in Godot 4.x
             Input.MouseMode = Input.MouseModeEnum.Hidden;
         }
 
@@ -91,8 +91,8 @@ namespace OpenBVEAndroid.System
         private void ProcessTouch(InputEventScreenTouch touch)
         {
             Vector2 normPos = new Vector2(
-                touch.Position.X / GetViewportRect().Size.X,
-                touch.Position.Y / GetViewportRect().Size.Y
+                touch.Position.X / GetViewport().GetVisibleRect().Size.X,
+                touch.Position.Y / GetViewport().GetVisibleRect().Size.Y
             );
 
             if (touch.Pressed)
@@ -157,8 +157,8 @@ namespace OpenBVEAndroid.System
         private void ProcessDrag(InputEventScreenDrag drag)
         {
             Vector2 normPos = new Vector2(
-                drag.Position.X / GetViewportRect().Size.X,
-                drag.Position.Y / GetViewportRect().Size.Y
+                drag.Position.X / GetViewport().GetVisibleRect().Size.X,
+                drag.Position.Y / GetViewport().GetVisibleRect().Size.Y
             );
 
             if (drag.Index == _movementTouchId)
@@ -207,13 +207,13 @@ namespace OpenBVEAndroid.System
                     TouchLook = new Vector2(rx, ry).LimitLength(1.0f);
                 }
 
-                // Triggers for fine throttle control
-                float lt = Input.GetJoyAxis(_gamepadId, JoyAxis.LeftTrigger);
-                float rt = Input.GetJoyAxis(_gamepadId, JoyAxis.RightTrigger);
-                if (lt > _gamepadDeadzone || rt > _gamepadDeadzone)
-                {
-                    _targetThrottle = rt - lt;
-                }
+                // Triggers for fine throttle control (not available in all Godot versions)
+                // float lt = Input.GetJoyAxis(_gamepadId, JoyAxis.LeftTrigger);
+                // float rt = Input.GetJoyAxis(_gamepadId, JoyAxis.RightTrigger);
+                // if (lt > _gamepadDeadzone || rt > _gamepadDeadzone)
+                // {
+                //     _targetThrottle = rt - lt;
+                // }
             }
         }
 
@@ -237,15 +237,15 @@ namespace OpenBVEAndroid.System
                     case JoyButton.Y: // Triangle / Y
                         CycleReverser();
                         break;
-                    case JoyButton.L1: // LB
-                        CameraCyclePressed = true;
-                        break;
-                    case JoyButton.R1: // RB
+                    // case JoyButton.L: // LB - not available in all Godot versions
+                        // CameraCyclePressed = true;
+                        // break;
+                    // case JoyButton.R: // RB - not available in all Godot versions
                         // Could be sand/brake
                         break;
                     case JoyButton.Start:
-                    case JoyButton.Select:
-                    case JoyButton.Mode:
+                    case JoyButton.Back:
+                    case JoyButton.Guide:
                         PausePressed = true;
                         break;
                     case JoyButton.DpadUp:
@@ -266,9 +266,9 @@ namespace OpenBVEAndroid.System
                     case JoyButton.B:
                         EmergencyBrake = false;
                         break;
-                    case JoyButton.L1:
-                        CameraCyclePressed = false;
-                        break;
+                    // case JoyButton.L: // Not available in all Godot versions
+                        // CameraCyclePressed = false;
+                        // break;
                 }
             }
         }
@@ -346,6 +346,27 @@ namespace OpenBVEAndroid.System
         private void CycleLights()
         {
             LightState = (LightState + 1) % 3; // 0, 1, 2
+        }
+
+        // Public methods for UI buttons
+        public void SetEmergencyBrake(bool active)
+        {
+            EmergencyBrake = active;
+        }
+
+        public void SetHorn(bool active)
+        {
+            HornPressed = active;
+        }
+
+        public void SetReverser(int position)
+        {
+            ReverserPosition = Math.Clamp(position, -1, 1);
+        }
+
+        public void CycleLightsPublic()
+        {
+            CycleLights();
         }
 
         // Getters for UI

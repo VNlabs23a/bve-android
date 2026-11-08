@@ -1,0 +1,64 @@
+# Godot
+.godot/
+.godot/mono/
+.godot/mono/temp/
+.godot/mono/glue/
+export_presets.cfg
+*.uid
+*.translation
+*.import
+*.cfg
+
+# Build
+build/
+bin/
+obj/
+
+# IDE
+.vscode/
+.idea/
+*.sln.docstates
+*.userprefs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks
+keystore.properties
+local.properties
+gradle.properties
+*.gradle
+gradle/
+gradlew
+gradlew.bat
+
+# .NET
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+# Logs
+*.log
+logs/
+
+# Temp
+tmp/
+temp/
+*.tmp
+
+# Node modules (if any)
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv

@@ -35,6 +35,9 @@ namespace OpenBVEAndroid.Rendering
         // Camera reference
         private Camera3D _camera;
 
+        // Frustum planes for culling (calculated from camera)
+        private Plane[] _frustumPlanes = new Plane[6];
+
         public override void _EnterTree()
         {
             Instance = this;
@@ -79,6 +82,9 @@ namespace OpenBVEAndroid.Rendering
         {
             Vector3 camPos = _camera.GlobalPosition;
 
+            // Update frustum planes for culling
+            UpdateFrustumPlanes();
+
             foreach (var obj in _lodObjects)
             {
                 if (obj == null || !IsInstanceValid(obj))
@@ -98,6 +104,21 @@ namespace OpenBVEAndroid.Rendering
             }
         }
 
+        private void UpdateFrustumPlanes()
+        {
+            if (_camera == null) return;
+
+            // Get frustum planes directly from Camera3D (Godot 4.x API)
+            var frustum = _camera.GetFrustum();
+            if (frustum.Count >= 6)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    _frustumPlanes[i] = frustum[i];
+                }
+            }
+        }
+
         private int CalculateLODLevel(float distance)
         {
             var distances = _lodDistances[CurrentQualityLevel];
@@ -113,9 +134,18 @@ namespace OpenBVEAndroid.Rendering
         {
             if (_camera == null) return true;
 
-            // Simple sphere frustum test
-            var frustum = _camera.GetCameraFrustum();
-            return frustum.IntersectsSphere(obj.GlobalPosition, obj.BoundingRadius);
+            // Sphere vs frustum test
+            Vector3 center = obj.GlobalPosition;
+            float radius = obj.BoundingRadius;
+
+            for (int i = 0; i < 6; i++)
+            {
+                float distance = _frustumPlanes[i].DistanceTo(center);
+                if (distance < -radius)
+                    return false; // Outside this plane
+            }
+
+            return true;
         }
 
         public float GetLODDistance(int level, int lodIndex)

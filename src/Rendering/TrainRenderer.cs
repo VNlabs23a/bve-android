@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using OpenBVEAndroid.System;
 
 namespace OpenBVEAndroid.Rendering
 {
@@ -9,8 +10,11 @@ namespace OpenBVEAndroid.Rendering
     /// </summary>
     public partial class TrainRenderer : Node3D
     {
-        [Export] public TrainPhysics.TrainSpec TrainSpec { get; set; }
+        [Export] public string TrainPath { get; set; } = "";
         [Export] public int QualityLevel { get; set; } = 2;
+
+        private TrainSpec _trainSpec;
+        public TrainSpec TrainSpec => _trainSpec;
 
         // Train composition
         private List<CarRenderer> _cars = new();
@@ -27,6 +31,29 @@ namespace OpenBVEAndroid.Rendering
         {
             _trainRoot = new Node3D { Name = "TrainRoot" };
             AddChild(_trainRoot);
+
+            if (!string.IsNullOrEmpty(TrainPath))
+            {
+                LoadTrainFromPath(TrainPath);
+            }
+        }
+
+        public void LoadTrainFromPath(string path)
+        {
+            var vfs = VirtualFS.Instance;
+            if (vfs == null) return;
+
+            string realPath = vfs.Resolve(path);
+            if (realPath == null) return;
+
+            // In a real implementation, this would parse the train file
+            // For now, use default spec
+            _trainSpec = TrainSpec.Default;
+        }
+
+        public void SetTrainSpec(TrainSpec spec)
+        {
+            _trainSpec = spec;
         }
 
         /// <summary>
@@ -223,28 +250,16 @@ namespace OpenBVEAndroid.Rendering
 
         private ArrayMesh GenerateProceduralMesh(string part)
         {
-            var st = new SurfaceTool();
-            st.Begin(MeshPrimitives.Triangles);
-
-            switch (part)
+            return part switch
             {
-                case "body":
-                    GenerateCarBody(st);
-                    break;
-                case "bogie":
-                    GenerateBogie(st);
-                    break;
-                case "pantograph":
-                    GeneratePantograph(st);
-                    break;
-            }
-
-            var mesh = new ArrayMesh();
-            st.Commit(mesh);
-            return mesh;
+                "body" => GenerateCarBody(),
+                "bogie" => GenerateBogie(),
+                "pantograph" => GeneratePantograph(),
+                _ => new ArrayMesh()
+            };
         }
 
-        private void GenerateCarBody(SurfaceTool st)
+        private ArrayMesh GenerateCarBody()
         {
             float halfL = Spec.Length * 0.5f;
             float halfW = Spec.Width * 0.5f;
@@ -270,17 +285,41 @@ namespace OpenBVEAndroid.Rendering
                 new[]{2,6,7,3}, new[]{1,5,6,2}, new[]{4,0,3,7}
             };
 
+            var vertices = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var normals = new List<Vector3>();
+
             foreach (var face in faces)
             {
-                for (int i = 0; i < 4; i++)
+                // Calculate face normal
+                Vector3 v0 = corners[face[0]];
+                Vector3 v1 = corners[face[1]];
+                Vector3 v2 = corners[face[2]];
+                Vector3 normal = (v1 - v0).Cross(v2 - v0).Normalized();
+
+                // Triangulate quad (0,1,2,3) -> (0,1,2) and (0,2,3)
+                int[] triIndices = { 0, 1, 2, 0, 2, 3 };
+                Vector2[] faceUvs = { new(0,0), new(1,0), new(1,1), new(0,1) };
+
+                foreach (int idx in triIndices)
                 {
-                    st.AddVertex(corners[face[i]]);
-                    st.AddUv(new Vector2(i % 2, i / 2));
+                    vertices.Add(corners[face[idx]]);
+                    uvs.Add(faceUvs[idx]);
+                    normals.Add(normal);
                 }
             }
+
+            var mesh = new ArrayMesh();
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)RenderingServer.ArrayType.Max);
+            arrays[(int)RenderingServer.ArrayType.Vertex] = vertices.ToArray();
+            arrays[(int)RenderingServer.ArrayType.TexUV] = uvs.ToArray();
+            arrays[(int)RenderingServer.ArrayType.Normal] = normals.ToArray();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            return mesh;
         }
 
-        private void GenerateBogie(SurfaceTool st)
+        private ArrayMesh GenerateBogie()
         {
             // Simplified bogie frame
             float w = 1.8f, h = 0.4f, l = 2.5f;
@@ -302,23 +341,74 @@ namespace OpenBVEAndroid.Rendering
                 new[]{2,6,7,3}, new[]{1,5,6,2}, new[]{4,0,3,7}
             };
 
+            var vertices = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var normals = new List<Vector3>();
+
             foreach (var face in faces)
             {
-                for (int i = 0; i < 4; i++)
+                Vector3 v0 = corners[face[0]];
+                Vector3 v1 = corners[face[1]];
+                Vector3 v2 = corners[face[2]];
+                Vector3 normal = (v1 - v0).Cross(v2 - v0).Normalized();
+
+                int[] triIndices = { 0, 1, 2, 0, 2, 3 };
+                Vector2[] faceUvs = { new(0,0), new(1,0), new(1,1), new(0,1) };
+
+                foreach (int idx in triIndices)
                 {
-                    st.AddVertex(corners[face[i]]);
-                    st.AddUv(new Vector2(i % 2, i / 2));
+                    vertices.Add(corners[face[idx]]);
+                    uvs.Add(faceUvs[idx]);
+                    normals.Add(normal);
                 }
             }
+
+            var mesh = new ArrayMesh();
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)RenderingServer.ArrayType.Max);
+            arrays[(int)RenderingServer.ArrayType.Vertex] = vertices.ToArray();
+            arrays[(int)RenderingServer.ArrayType.TexUV] = uvs.ToArray();
+            arrays[(int)RenderingServer.ArrayType.Normal] = normals.ToArray();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            return mesh;
         }
 
-        private void GeneratePantograph(SurfaceTool st)
+        private ArrayMesh GeneratePantograph()
         {
-            // Simple pantograph shape (diamond)
-            st.AddVertex(new Vector3(0, 0, 0)); st.AddUv(Vector2.Zero);
-            st.AddVertex(new Vector3(0.5f, 1.0f, 0)); st.AddUv(new Vector2(1, 0.5f));
-            st.AddVertex(new Vector3(0, 2.0f, 0)); st.AddUv(new Vector2(0.5f, 1));
-            st.AddVertex(new Vector3(-0.5f, 1.0f, 0)); st.AddUv(new Vector2(0, 0.5f));
+            // Simple pantograph shape (diamond) - 4 vertices, 2 triangles
+            var vertices = new Vector3[]
+            {
+                new(0, 0, 0),
+                new(0.5f, 1.0f, 0),
+                new(0, 2.0f, 0),
+                new(-0.5f, 1.0f, 0)
+            };
+
+            var uvs = new Vector2[]
+            {
+                new(0.5f, 0.5f),
+                new(1, 0.5f),
+                new(0.5f, 1),
+                new(0, 0.5f)
+            };
+
+            var normals = new Vector3[]
+            {
+                new(0, 0, 1), new(0, 0, 1), new(0, 0, 1), new(0, 0, 1)
+            };
+
+            // Two triangles: 0,1,2 and 0,2,3
+            var indices = new int[] { 0, 1, 2, 0, 2, 3 };
+
+            var mesh = new ArrayMesh();
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)RenderingServer.ArrayType.Max);
+            arrays[(int)RenderingServer.ArrayType.Vertex] = vertices;
+            arrays[(int)RenderingServer.ArrayType.TexUV] = uvs;
+            arrays[(int)RenderingServer.ArrayType.Normal] = normals;
+            arrays[(int)RenderingServer.ArrayType.Index] = indices;
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            return mesh;
         }
 
         private void CreateWheels()
@@ -353,12 +443,13 @@ namespace OpenBVEAndroid.Rendering
 
         private ArrayMesh GenerateWheel(float radius, float width)
         {
-            var st = new SurfaceTool();
-            st.Begin(MeshPrimitives.Triangles);
-
             int segments = QualityLevel >= 2 ? 16 : 8;
 
-            // Generate cylinder
+            var vertices = new List<Vector3>();
+            var uvs = new List<Vector2>();
+            var normals = new List<Vector3>();
+
+            // Generate cylinder side faces
             for (int i = 0; i < segments; i++)
             {
                 float a1 = (float)i / segments * 2 * MathF.PI;
@@ -367,18 +458,63 @@ namespace OpenBVEAndroid.Rendering
                 Vector3 p1 = new Vector3(MathF.Cos(a1), MathF.Sin(a1), 0) * radius;
                 Vector3 p2 = new Vector3(MathF.Cos(a2), MathF.Sin(a2), 0) * radius;
 
-                // Side face
-                st.AddVertex(new Vector3(p1.X, p1.Y, -width * 0.5f)); st.AddUv(new Vector2((float)i / segments, 0));
-                st.AddVertex(new Vector3(p2.X, p2.Y, -width * 0.5f)); st.AddUv(new Vector2((float)(i + 1) / segments, 0));
-                st.AddVertex(new Vector3(p2.X, p2.Y, width * 0.5f)); st.AddUv(new Vector2((float)(i + 1) / segments, 1));
+                // Side face - two triangles
+                Vector3 v1 = new Vector3(p1.X, p1.Y, -width * 0.5f);
+                Vector3 v2 = new Vector3(p2.X, p2.Y, -width * 0.5f);
+                Vector3 v3 = new Vector3(p2.X, p2.Y, width * 0.5f);
+                Vector3 v4 = new Vector3(p1.X, p1.Y, width * 0.5f);
 
-                st.AddVertex(new Vector3(p1.X, p1.Y, width * 0.5f)); st.AddUv(new Vector2((float)i / segments, 1));
-                st.AddVertex(new Vector3(p2.X, p2.Y, width * 0.5f)); st.AddUv(new Vector2((float)(i + 1) / segments, 1));
-                st.AddVertex(new Vector3(p1.X, p1.Y, -width * 0.5f)); st.AddUv(new Vector2((float)i / segments, 0));
+                Vector3 normal = (v2 - v1).Cross(v4 - v1).Normalized();
+
+                // Triangle 1: v1, v2, v3
+                vertices.Add(v1); uvs.Add(new Vector2((float)i / segments, 0)); normals.Add(normal);
+                vertices.Add(v2); uvs.Add(new Vector2((float)(i + 1) / segments, 0)); normals.Add(normal);
+                vertices.Add(v3); uvs.Add(new Vector2((float)(i + 1) / segments, 1)); normals.Add(normal);
+
+                // Triangle 2: v1, v3, v4
+                vertices.Add(v1); uvs.Add(new Vector2((float)i / segments, 0)); normals.Add(normal);
+                vertices.Add(v3); uvs.Add(new Vector2((float)(i + 1) / segments, 1)); normals.Add(normal);
+                vertices.Add(v4); uvs.Add(new Vector2((float)i / segments, 1)); normals.Add(normal);
+            }
+
+            // Generate end caps (circles)
+            // Front cap (z = width * 0.5f)
+            Vector3 centerFront = new Vector3(0, 0, width * 0.5f);
+            Vector3 normalFront = new Vector3(0, 0, 1);
+            for (int i = 0; i < segments; i++)
+            {
+                float a1 = (float)i / segments * 2 * MathF.PI;
+                float a2 = (float)(i + 1) / segments * 2 * MathF.PI;
+                Vector3 p1 = new Vector3(MathF.Cos(a1), MathF.Sin(a1), 0) * radius;
+                Vector3 p2 = new Vector3(MathF.Cos(a2), MathF.Sin(a2), 0) * radius;
+
+                vertices.Add(centerFront); uvs.Add(new Vector2(0.5f, 0.5f)); normals.Add(normalFront);
+                vertices.Add(new Vector3(p1.X, p1.Y, width * 0.5f)); uvs.Add(new Vector2((float)i / segments, 0.5f)); normals.Add(normalFront);
+                vertices.Add(new Vector3(p2.X, p2.Y, width * 0.5f)); uvs.Add(new Vector2((float)(i + 1) / segments, 0.5f)); normals.Add(normalFront);
+            }
+
+            // Back cap (z = -width * 0.5f)
+            Vector3 centerBack = new Vector3(0, 0, -width * 0.5f);
+            Vector3 normalBack = new Vector3(0, 0, -1);
+            for (int i = 0; i < segments; i++)
+            {
+                float a1 = (float)i / segments * 2 * MathF.PI;
+                float a2 = (float)(i + 1) / segments * 2 * MathF.PI;
+                Vector3 p1 = new Vector3(MathF.Cos(a1), MathF.Sin(a1), 0) * radius;
+                Vector3 p2 = new Vector3(MathF.Cos(a2), MathF.Sin(a2), 0) * radius;
+
+                vertices.Add(centerBack); uvs.Add(new Vector2(0.5f, 0.5f)); normals.Add(normalBack);
+                vertices.Add(new Vector3(p2.X, p2.Y, -width * 0.5f)); uvs.Add(new Vector2((float)(i + 1) / segments, 0.5f)); normals.Add(normalBack);
+                vertices.Add(new Vector3(p1.X, p1.Y, -width * 0.5f)); uvs.Add(new Vector2((float)i / segments, 0.5f)); normals.Add(normalBack);
             }
 
             var mesh = new ArrayMesh();
-            st.Commit(mesh);
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)RenderingServer.ArrayType.Max);
+            arrays[(int)RenderingServer.ArrayType.Vertex] = vertices.ToArray();
+            arrays[(int)RenderingServer.ArrayType.TexUV] = uvs.ToArray();
+            arrays[(int)RenderingServer.ArrayType.Normal] = normals.ToArray();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
             return mesh;
         }
 

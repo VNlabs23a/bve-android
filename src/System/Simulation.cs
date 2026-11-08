@@ -20,7 +20,7 @@ namespace OpenBVEAndroid.System
         // State
         public bool IsRunning { get; private set; }
         public bool IsPaused { get; private set; }
-        public double SimulationTime { get; private set; }
+        public double SimulationTime { get; set; }
         public double FixedTimeAccumulator { get; private set; }
 
         // Current route and train
@@ -30,7 +30,7 @@ namespace OpenBVEAndroid.System
 
         // Camera
         public Camera3D MainCamera { get; private set; }
-        public CameraMode CameraMode { get; set; } = CameraMode.Cab;
+        public CameraViewMode CameraViewMode { get; set; } = CameraViewMode.Cab;
 
         // Events
         public event Action<double> OnSimulationStep;
@@ -125,11 +125,11 @@ namespace OpenBVEAndroid.System
             if (MainCamera == null || PlayerFollower == null)
                 return;
 
-            Transform3D targetTransform = CameraMode switch
+            Transform3D targetTransform = CameraViewMode switch
             {
-                CameraMode.Cab => PlayerFollower.GetCabTransform(),
-                CameraMode.Chase => GetChaseCameraTransform(),
-                CameraMode.Free => MainCamera.GlobalTransform, // Controlled by input
+                CameraViewMode.Cab => PlayerFollower.GetCabTransform(),
+                CameraViewMode.Chase => GetChaseCameraTransform(),
+                CameraViewMode.Free => MainCamera.GlobalTransform, // Controlled by input
                 _ => PlayerFollower.GetWorldTransform()
             };
 
@@ -248,7 +248,7 @@ namespace OpenBVEAndroid.System
 
         public void CycleCamera()
         {
-            CameraMode = (CameraMode)(((int)CameraMode + 1) % 3);
+            CameraViewMode = (CameraViewMode)(((int)CameraViewMode + 1) % 3);
         }
 
         // Getters for UI
@@ -275,7 +275,7 @@ namespace OpenBVEAndroid.System
     /// <summary>
     /// Camera view modes.
     /// </summary>
-    public enum CameraMode
+    public enum CameraViewMode
     {
         Cab,      // First person from driver's seat
         Chase,    // Third person behind train

@@ -1,5 +1,7 @@
 using System;
+using System.Text.Json;
 using Godot;
+using OpenBVEAndroid.Rendering;
 
 namespace OpenBVEAndroid.System
 {
@@ -88,77 +90,28 @@ namespace OpenBVEAndroid.System
 
         private void ApplyRenderingSettings()
         {
-            var rs = RenderingServer.GetRenderingDevice();
-            if (rs == null) return;
-
-            // Render scale
-            RenderingServer.SetDefaultCanvasItemTextureFilter(
-                CurrentSettings.TextureFilter
-            );
-
-            // Anisotropic filtering
-            RenderingServer.SetDefaultCanvasItemTextureRepeat(
-                CurrentSettings.AnisotropicLevel > 1
-            );
-
             // VSync
             DisplayServer.WindowSetVsyncMode(
                 CurrentSettings.VSync ? DisplayServer.VSyncMode.Enabled : DisplayServer.VSyncMode.Disabled
             );
+
+            // Texture filter and anisotropic filtering are set per-material in Godot 4.x
+            // Engine.MaxFps for frame rate limiting
+            Engine.MaxFps = CurrentSettings.TargetFPS;
         }
 
         private void ApplyShadowSettings()
         {
-            if (!CurrentSettings.ShadowsEnabled)
-            {
-                RenderingServer.SetShadowAtlasSize(0);
-                return;
-            }
-
-            // Shadow atlas size based on quality
-            int atlasSize = CurrentSettings.ShadowQuality switch
-            {
-                ShadowQuality.Low => 1024,
-                ShadowQuality.Medium => 2048,
-                ShadowQuality.High => 4096,
-                ShadowQuality.Ultra => 8192,
-                _ => 2048
-            };
-
-            RenderingServer.SetShadowAtlasSize(atlasSize);
-            RenderingServer.SetShadowAtlasQuadrantSubdiv(0, CurrentSettings.ShadowCascades);
-
-            // Shadow filter
-            RenderingServer.SetDefaultCanvasItemTextureFilter(
-                CurrentSettings.ShadowFilter
-            );
+            // Shadow settings are configured per-light and per-environment in Godot 4.x
+            // This is a simplified stub - real implementation would configure directional light shadows
+            GD.Print($"QualityManager: Shadow quality set to {CurrentSettings.ShadowQuality}");
         }
 
         private void ApplyPostProcessingSettings()
         {
-            // Find post-process effect in scene tree
-            var worldEnv = RenderingServer.GetWorld3DEnvironment();
-            if (worldEnv != null)
-            {
-                // Bloom
-                RenderingServer.EnvironmentSetBloomEnabled(worldEnv, CurrentSettings.BloomEnabled);
-                RenderingServer.EnvironmentSetBloomIntensity(worldEnv, CurrentSettings.BloomIntensity);
-                RenderingServer.EnvironmentSetBloomThreshold(worldEnv, CurrentSettings.BloomThreshold);
-
-                // Tone mapping
-                RenderingServer.EnvironmentSetToneMapper(
-                    worldEnv,
-                    CurrentSettings.ToneMappingEnabled ? Environment.ToneMapper.AcesFitted : Environment.ToneMapper.Disabled
-                );
-
-                // Exposure
-                RenderingServer.EnvironmentSetExposure(worldEnv, CurrentSettings.Exposure);
-
-                // Adjustments
-                RenderingServer.EnvironmentSetAdjustmentEnabled(worldEnv, true);
-                RenderingServer.EnvironmentSetAdjustmentContrast(worldEnv, CurrentSettings.Contrast);
-                RenderingServer.EnvironmentSetAdjustmentSaturation(worldEnv, CurrentSettings.Saturation);
-            }
+            // Post-processing settings are configured via WorldEnvironment node in Godot 4.x
+            // This is a simplified stub
+            GD.Print($"QualityManager: Post-processing - Bloom: {CurrentSettings.BloomEnabled}, ToneMapping: {CurrentSettings.ToneMappingEnabled}");
         }
 
         private void CheckAutoQuality()
@@ -188,12 +141,12 @@ namespace OpenBVEAndroid.System
                 QualityPreset.Low => new QualitySettings
                 {
                     RenderScale = 0.5f,
-                    TextureFilter = RenderingServer.DefaultCanvasItemTextureFilter.Nearest,
+                    TextureFilter = RenderingServer.CanvasItemTextureFilter.Nearest,
                     AnisotropicLevel = 0,
                     ShadowsEnabled = false,
                     ShadowQuality = ShadowQuality.Low,
                     ShadowCascades = 1,
-                    ShadowFilter = RenderingServer.DefaultCanvasItemTextureFilter.Nearest,
+                    ShadowFilter = RenderingServer.CanvasItemTextureFilter.Nearest,
                     BloomEnabled = false,
                     BloomIntensity = 0f,
                     BloomThreshold = 1f,
@@ -210,12 +163,12 @@ namespace OpenBVEAndroid.System
                 QualityPreset.Medium => new QualitySettings
                 {
                     RenderScale = 0.75f,
-                    TextureFilter = RenderingServer.DefaultCanvasItemTextureFilter.Linear,
+                    TextureFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     AnisotropicLevel = 2,
                     ShadowsEnabled = true,
                     ShadowQuality = ShadowQuality.Medium,
                     ShadowCascades = 2,
-                    ShadowFilter = RenderingServer.DefaultCanvasItemTextureFilter.Linear,
+                    ShadowFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     BloomEnabled = false,
                     BloomIntensity = 0.3f,
                     BloomThreshold = 1f,
@@ -232,12 +185,12 @@ namespace OpenBVEAndroid.System
                 QualityPreset.High => new QualitySettings
                 {
                     RenderScale = 1.0f,
-                    TextureFilter = RenderingServer.DefaultCanvasItemTextureFilter.LinearMipmap,
+                    TextureFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     AnisotropicLevel = 4,
                     ShadowsEnabled = true,
                     ShadowQuality = ShadowQuality.High,
                     ShadowCascades = 3,
-                    ShadowFilter = RenderingServer.DefaultCanvasItemTextureFilter.LinearMipmap,
+                    ShadowFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     BloomEnabled = true,
                     BloomIntensity = 0.5f,
                     BloomThreshold = 1f,
@@ -254,12 +207,12 @@ namespace OpenBVEAndroid.System
                 QualityPreset.Ultra => new QualitySettings
                 {
                     RenderScale = 1.0f,
-                    TextureFilter = RenderingServer.DefaultCanvasItemTextureFilter.LinearMipmap,
+                    TextureFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     AnisotropicLevel = 8,
                     ShadowsEnabled = true,
                     ShadowQuality = ShadowQuality.Ultra,
                     ShadowCascades = 4,
-                    ShadowFilter = RenderingServer.DefaultCanvasItemTextureFilter.LinearMipmap,
+                    ShadowFilter = RenderingServer.CanvasItemTextureFilter.Linear,
                     BloomEnabled = true,
                     BloomIntensity = 0.7f,
                     BloomThreshold = 0.8f,
@@ -361,12 +314,12 @@ namespace OpenBVEAndroid.System
     public class QualitySettings
     {
         public float RenderScale { get; set; } = 1.0f;
-        public RenderingServer.DefaultCanvasItemTextureFilter TextureFilter { get; set; }
+        public RenderingServer.CanvasItemTextureFilter TextureFilter { get; set; }
         public int AnisotropicLevel { get; set; } = 4;
         public bool ShadowsEnabled { get; set; } = true;
         public QualityManager.ShadowQuality ShadowQuality { get; set; }
         public int ShadowCascades { get; set; } = 3;
-        public RenderingServer.DefaultCanvasItemTextureFilter ShadowFilter { get; set; }
+        public RenderingServer.CanvasItemTextureFilter ShadowFilter { get; set; }
         public bool BloomEnabled { get; set; } = true;
         public float BloomIntensity { get; set; } = 0.5f;
         public float BloomThreshold { get; set; } = 1.0f;

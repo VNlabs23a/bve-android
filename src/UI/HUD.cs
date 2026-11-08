@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using OpenBVEAndroid.System;
 
 namespace OpenBVEAndroid.UI
 {
@@ -63,7 +64,7 @@ namespace OpenBVEAndroid.UI
                 return;
 
             // Speed
-            float speedKmh = _simulation.GetSpeedKmh();
+            float speedKmh = (float)_simulation.GetSpeedKmh();
             _speedValue.Text = $"{speedKmh:F0}";
 
             // Color code speed based on limit

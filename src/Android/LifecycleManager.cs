@@ -1,5 +1,7 @@
 using System;
 using Godot;
+using OpenBVEAndroid.System;
+using OpenBVEAndroid.Rendering;
 
 namespace OpenBVEAndroid.Android
 {
@@ -21,16 +23,21 @@ namespace OpenBVEAndroid.Android
         public event Action OnPause;
         public event Action OnResume;
         public event Action OnLowMemory;
-        public event Action OnConfigurationChanged;
+        public event Action ConfigurationChanged; // Renamed to avoid conflict with method
         public event Action OnSaveState;
         public event Action OnRestoreState;
+
+        // Godot 4.x notification codes (from MainLoop)
+        private const long NotificationApplicationFocusIn = 1002;
+        private const long NotificationApplicationFocusOut = 1003;
+        private const long NotificationWMCloseRequest = 1004;
+        private const long NotificationWMGoBackRequest = 1005;
+        private const long NotificationMemoryWarning = 1006;
+        private const long NotificationTranslationChanged = 1007;
 
         public override void _EnterTree()
         {
             Instance = this;
-
-            // Listen for Godot's notifications
-            GetTree().Root.Connect("notification_received", new Callable(this, nameof(OnNotificationReceived)));
         }
 
         public override void _ExitTree()
@@ -38,26 +45,26 @@ namespace OpenBVEAndroid.Android
             Instance = null;
         }
 
-        private void OnNotificationReceived(long what)
+        public override void _Notification(int what)
         {
-            switch ((int)what)
+            switch (what)
             {
-                case MainLoop.NotificationWmFocusIn:
+                case (int)NotificationApplicationFocusIn:
                     OnFocusGained();
                     break;
-                case MainLoop.NotificationWmFocusOut:
+                case (int)NotificationApplicationFocusOut:
                     OnFocusLost();
                     break;
-                case MainLoop.NotificationWmQuitRequest:
+                case (int)NotificationWMCloseRequest:
                     OnQuitRequest();
                     break;
-                case MainLoop.NotificationWmGoBackRequest:
+                case (int)NotificationWMGoBackRequest:
                     OnBackPressed();
                     break;
-                case MainLoop.NotificationMemoryWarning:
+                case (int)NotificationMemoryWarning:
                     OnMemoryWarning();
                     break;
-                case MainLoop.NotificationTranslationChanged:
+                case (int)NotificationTranslationChanged:
                     OnTranslationChanged();
                     break;
             }
@@ -128,8 +135,8 @@ namespace OpenBVEAndroid.Android
                 quality.ApplyQualityPreset(quality.CurrentPreset - 1);
             }
 
-            // Clear texture cache
-            RenderingServer.FreeUnusedResources();
+            // Clear texture cache (Godot 4.x handles this automatically)
+            // RenderingServer.FreeUnusedResources();
 
             OnLowMemory?.Invoke();
         }
@@ -183,7 +190,7 @@ namespace OpenBVEAndroid.Android
             GD.Print("LifecycleManager: Configuration changed (rotation, keyboard, etc.)");
 
             // Recreate UI if needed
-            OnConfigurationChanged?.Invoke();
+            ConfigurationChanged?.Invoke();
         }
 
         /// <summary>
@@ -199,7 +206,7 @@ namespace OpenBVEAndroid.Android
                 bundle["simulation_running"] = sim.IsRunning;
                 bundle["simulation_time"] = sim.SimulationTime;
                 bundle["route_path"] = sim.RouteManager?.CurrentRoutePath ?? "";
-                bundle["camera_mode"] = (int)sim.CameraMode;
+                bundle["camera_mode"] = (int)sim.CameraViewMode;
             }
 
             var input = InputManager.Instance;
@@ -245,7 +252,7 @@ namespace OpenBVEAndroid.Android
 
             sim.StartSimulation(routePath);
             sim.SimulationTime = simTime;
-            sim.CameraMode = (Simulation.CameraMode)cameraMode;
+            sim.CameraViewMode = (CameraViewMode)cameraMode;
 
             // Restore input
             var input = InputManager.Instance;

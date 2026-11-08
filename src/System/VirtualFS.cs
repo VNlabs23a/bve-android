@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Godot;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 
 namespace OpenBVEAndroid.System
 {
@@ -116,7 +118,7 @@ namespace OpenBVEAndroid.System
         /// <summary>
         /// Open a file for reading.
         /// </summary>
-        public FileAccess OpenRead(string virtualPath)
+        public Godot.FileAccess OpenRead(string virtualPath)
         {
             string realPath = Resolve(virtualPath);
             if (realPath == null)
@@ -124,11 +126,11 @@ namespace OpenBVEAndroid.System
 
             if (realPath.StartsWith("res://"))
             {
-                return FileAccess.Open(realPath, FileAccess.ModeFlags.Read);
+                return Godot.FileAccess.Open(realPath, Godot.FileAccess.ModeFlags.Read);
             }
             else
             {
-                return FileAccess.Open(realPath, FileAccess.ModeFlags.Read);
+                return Godot.FileAccess.Open(realPath, Godot.FileAccess.ModeFlags.Read);
             }
         }
 
@@ -448,7 +450,7 @@ namespace OpenBVEAndroid.System
     /// </summary>
     public class ArchiveMount : MountPoint
     {
-        private SharpCompress.Archives.IArchive _archive;
+        private IArchive _archive;
 
         public ArchiveMount(string archivePath, string virtualPath, bool readOnly, int priority = 0)
         {
@@ -458,7 +460,7 @@ namespace OpenBVEAndroid.System
             Priority = priority;
 
             using var stream = File.OpenRead(archivePath);
-            _archive = SharpCompress.Archives.ArchiveFactory.Open(stream);
+            _archive = ArchiveFactory.Open(stream);
         }
 
         public override bool TryResolve(string virtualPath, out string realPath)
@@ -478,7 +480,13 @@ namespace OpenBVEAndroid.System
                 // Extract to temp and return temp path
                 string tempPath = Path.Combine(OS.GetUserDataDir(), "tmp", relPath);
                 Directory.CreateDirectory(Path.GetDirectoryName(tempPath));
-                entry.WriteToFile(tempPath, SharpCompress.Common.ExtractOptions.ExtractFullPath | SharpCompress.Common.ExtractOptions.Overwrite);
+
+                // Use the newer SharpCompress API
+                entry.WriteToFile(tempPath, new ExtractionOptions
+                {
+                    ExtractFullPath = true,
+                    Overwrite = true
+                });
                 realPath = tempPath;
                 return true;
             }
@@ -505,14 +513,6 @@ namespace OpenBVEAndroid.System
                 .Distinct()
                 .ToArray();
         }
-    }
-
-    public class RouteInfo
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public string Format { get; set; }
-        public string PreviewImage { get; set; }
     }
 
     public class TrainInfo

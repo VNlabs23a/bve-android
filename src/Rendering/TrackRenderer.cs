@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Godot;
+using OpenBVEAndroid.System;
 
 namespace OpenBVEAndroid.Rendering
 {
@@ -10,8 +11,11 @@ namespace OpenBVEAndroid.Rendering
     /// </summary>
     public partial class TrackRenderer : Node3D
     {
-        [Export] public Track Track { get; set; }
+        [Export] public string TrackPath { get; set; } = "";
         [Export] public int QualityLevel { get; set; } = 2; // 0=Low, 1=Medium, 2=High, 3=Ultra
+
+        private Track _track;
+        public Track Track => _track;
 
         // Shader variants
         private Shader _basicShader;
@@ -23,7 +27,6 @@ namespace OpenBVEAndroid.Rendering
         private ArrayMesh _railMesh;
         private ArrayMesh _sleeperMesh;
         private ArrayMesh _ballastMesh;
-        private SurfaceTool _surfaceTool;
 
         // Materials per quality
         private Material _railMaterial;
@@ -34,11 +37,45 @@ namespace OpenBVEAndroid.Rendering
         private readonly float[] _lodDistances = { 50f, 150f, 400f, 1000f };
         private readonly int[] _lodSegments = { 1, 2, 4, 8 };
 
+        // Mesh building data
+        private List<Vector3> _railVertices = new();
+        private List<Vector2> _railUvs = new();
+        private List<Vector3> _railNormals = new();
+        private List<Vector3> _sleeperVertices = new();
+        private List<Vector2> _sleeperUvs = new();
+        private List<Vector3> _sleeperNormals = new();
+        private List<Vector3> _ballastVertices = new();
+        private List<Vector2> _ballastUvs = new();
+        private List<Vector3> _ballastNormals = new();
+
         public override void _Ready()
         {
             LoadShaders();
             CreateMaterials();
-            if (Track != null)
+
+            // Try to load track from path if specified
+            if (!string.IsNullOrEmpty(TrackPath))
+            {
+                LoadTrackFromPath(TrackPath);
+            }
+        }
+
+        public void LoadTrackFromPath(string path)
+        {
+            var vfs = VirtualFS.Instance;
+            if (vfs == null) return;
+
+            string realPath = vfs.Resolve(path);
+            if (realPath == null) return;
+
+            // In a real implementation, this would parse the route file
+            // For now, we'll rely on the simulation to set the track
+        }
+
+        public void SetTrack(Track track)
+        {
+            _track = track;
+            if (_track != null)
             {
                 GenerateTrackMesh();
             }
@@ -59,7 +96,8 @@ namespace OpenBVEAndroid.Rendering
             _ballastMaterial = new ShaderMaterial { Shader = _basicShader };
 
             // Set default textures (will be replaced by actual textures)
-            var defaultTex = Texture2D.CreateFromImage(Image.Create(64, 64, false, Image.Format.Rgba8));
+            var defaultImage = Image.CreateEmpty(64, 64, false, Image.Format.Rgba8);
+            var defaultTex = ImageTexture.CreateFromImage(defaultImage);
             ((ShaderMaterial)_railMaterial).SetShaderParameter("day_texture", defaultTex);
             ((ShaderMaterial)_sleeperMaterial).SetShaderParameter("day_texture", defaultTex);
             ((ShaderMaterial)_ballastMaterial).SetShaderParameter("day_texture", defaultTex);
@@ -70,18 +108,36 @@ namespace OpenBVEAndroid.Rendering
             if (Track == null || Track.Elements.Length == 0)
                 return;
 
-            _surfaceTool = new SurfaceTool();
-            _surfaceTool.Begin(MeshPrimitives.Triangles);
+            // Clear mesh building data
+            _railVertices.Clear(); _railUvs.Clear(); _railNormals.Clear();
+            _sleeperVertices.Clear(); _sleeperUvs.Clear(); _sleeperNormals.Clear();
+            _ballastVertices.Clear(); _ballastUvs.Clear(); _ballastNormals.Clear();
 
             GenerateRails();
             GenerateSleepers();
             GenerateBallast();
 
-            _railMesh = new ArrayMesh();
-            _surfaceTool.Commit(_railMesh);
+            // Create meshes from accumulated data
+            _railMesh = CreateMeshFromArrays(_railVertices, _railUvs, _railNormals);
+            _sleeperMesh = CreateMeshFromArrays(_sleeperVertices, _sleeperUvs, _sleeperNormals);
+            _ballastMesh = CreateMeshFromArrays(_ballastVertices, _ballastUvs, _ballastNormals);
 
             // Create MeshInstance3D children for each mesh type
             CreateMeshInstances();
+        }
+
+        private ArrayMesh CreateMeshFromArrays(List<Vector3> vertices, List<Vector2> uvs, List<Vector3> normals)
+        {
+            var mesh = new ArrayMesh();
+            if (vertices.Count == 0) return mesh;
+
+            var arrays = new Godot.Collections.Array();
+            arrays.Resize((int)RenderingServer.ArrayType.Max);
+            arrays[(int)RenderingServer.ArrayType.Vertex] = vertices.ToArray();
+            arrays[(int)RenderingServer.ArrayType.TexUV] = uvs.ToArray();
+            arrays[(int)RenderingServer.ArrayType.Normal] = normals.ToArray();
+            mesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
+            return mesh;
         }
 
         private void GenerateRails()
@@ -219,6 +275,9 @@ namespace OpenBVEAndroid.Rendering
                 uvs[i * 2 + 1] = new Vector2(profile[i].X + 0.5f, 1);
             }
 
+            // Calculate normal for the rail (pointing up)
+            Vector3 normal = up;
+
             // Create triangles
             for (int i = 0; i < count - 1; i++)
             {
@@ -227,14 +286,14 @@ namespace OpenBVEAndroid.Rendering
                 int i2 = (i + 1) * 2;
                 int i3 = (i + 1) * 2 + 1;
 
-                // Two triangles per quad
-                _surfaceTool.AddVertex(vertices[i0]); _surfaceTool.AddUv(uvs[i0]);
-                _surfaceTool.AddVertex(vertices[i2]); _surfaceTool.AddUv(uvs[i2]);
-                _surfaceTool.AddVertex(vertices[i1]); _surfaceTool.AddUv(uvs[i1]);
+                // Two triangles per quad: (i0, i2, i1) and (i1, i2, i3)
+                _railVertices.Add(vertices[i0]); _railUvs.Add(uvs[i0]); _railNormals.Add(normal);
+                _railVertices.Add(vertices[i2]); _railUvs.Add(uvs[i2]); _railNormals.Add(normal);
+                _railVertices.Add(vertices[i1]); _railUvs.Add(uvs[i1]); _railNormals.Add(normal);
 
-                _surfaceTool.AddVertex(vertices[i1]); _surfaceTool.AddUv(uvs[i1]);
-                _surfaceTool.AddVertex(vertices[i2]); _surfaceTool.AddUv(uvs[i2]);
-                _surfaceTool.AddVertex(vertices[i3]); _surfaceTool.AddUv(uvs[i3]);
+                _railVertices.Add(vertices[i1]); _railUvs.Add(uvs[i1]); _railNormals.Add(normal);
+                _railVertices.Add(vertices[i2]); _railUvs.Add(uvs[i2]); _railNormals.Add(normal);
+                _railVertices.Add(vertices[i3]); _railUvs.Add(uvs[i3]); _railNormals.Add(normal);
             }
         }
 
@@ -248,21 +307,24 @@ namespace OpenBVEAndroid.Rendering
             for (int i = 0; i < count; i++)
             {
                 verticesA[i] = a + profile[i].offset + upA * depth;
-                verticesB[i] = b + Vector3.Lerp(sideA, sideB, 0.5f) * profile[i].offset.X + upB * depth;
+                verticesB[i] = b + sideA.Lerp(sideB, 0.5f) * profile[i].offset.X + upB * depth;
                 uvs[i * 2] = new Vector2(profile[i].u, 0);
                 uvs[i * 2 + 1] = new Vector2(profile[i].u, 1);
             }
 
+            // Calculate normal (pointing down for ballast bottom)
+            Vector3 normal = -upA; // Ballast bottom faces down
+
             for (int i = 0; i < count - 1; i++)
             {
-                // Bottom face
-                _surfaceTool.AddVertex(verticesA[i]); _surfaceTool.AddUv(uvs[i * 2]);
-                _surfaceTool.AddVertex(verticesA[i + 1]); _surfaceTool.AddUv(uvs[(i + 1) * 2]);
-                _surfaceTool.AddVertex(verticesB[i]); _surfaceTool.AddUv(uvs[i * 2 + 1]);
+                // Bottom face - two triangles
+                _ballastVertices.Add(verticesA[i]); _ballastUvs.Add(uvs[i * 2]); _ballastNormals.Add(normal);
+                _ballastVertices.Add(verticesA[i + 1]); _ballastUvs.Add(uvs[(i + 1) * 2]); _ballastNormals.Add(normal);
+                _ballastVertices.Add(verticesB[i]); _ballastUvs.Add(uvs[i * 2 + 1]); _ballastNormals.Add(normal);
 
-                _surfaceTool.AddVertex(verticesB[i]); _surfaceTool.AddUv(uvs[i * 2 + 1]);
-                _surfaceTool.AddVertex(verticesA[i + 1]); _surfaceTool.AddUv(uvs[(i + 1) * 2]);
-                _surfaceTool.AddVertex(verticesB[i + 1]); _surfaceTool.AddUv(uvs[(i + 1) * 2 + 1]);
+                _ballastVertices.Add(verticesB[i]); _ballastUvs.Add(uvs[i * 2 + 1]); _ballastNormals.Add(normal);
+                _ballastVertices.Add(verticesA[i + 1]); _ballastUvs.Add(uvs[(i + 1) * 2]); _ballastNormals.Add(normal);
+                _ballastVertices.Add(verticesB[i + 1]); _ballastUvs.Add(uvs[(i + 1) * 2 + 1]); _ballastNormals.Add(normal);
             }
         }
 
@@ -292,13 +354,30 @@ namespace OpenBVEAndroid.Rendering
             };
 
             Vector2[] faceUvs = new Vector2[4] { new(0,0), new(1,0), new(1,1), new(0,1) };
-
-            foreach (var face in faces)
+            // Face normals: bottom, top, front, back, right, left
+            Vector3[] faceNormals = new Vector3[6]
             {
-                for (int i = 0; i < 4; i++)
+                -halfExtentY.Normalized(),  // Bottom
+                halfExtentY.Normalized(),   // Top
+                -halfExtentZ.Normalized(),  // Front
+                halfExtentZ.Normalized(),   // Back
+                halfExtentX.Normalized(),   // Right
+                -halfExtentX.Normalized()   // Left
+            };
+
+            for (int faceIdx = 0; faceIdx < faces.Length; faceIdx++)
+            {
+                var face = faces[faceIdx];
+                Vector3 normal = faceNormals[faceIdx];
+
+                // Triangulate quad: (0,1,2) and (0,2,3)
+                int[] triIndices = { 0, 1, 2, 0, 2, 3 };
+
+                foreach (int idx in triIndices)
                 {
-                    _surfaceTool.AddVertex(corners[face[i]]);
-                    _surfaceTool.AddUv(faceUvs[i]);
+                    _sleeperVertices.Add(corners[face[idx]]);
+                    _sleeperUvs.Add(faceUvs[idx]);
+                    _sleeperNormals.Add(normal);
                 }
             }
         }
@@ -310,8 +389,21 @@ namespace OpenBVEAndroid.Rendering
             railInstance.SetSurfaceOverrideMaterial(0, _railMaterial);
             AddChild(railInstance);
 
-            // Sleepers (separate mesh for different material)
-            // Ballast (separate mesh)
+            // Sleepers
+            if (_sleeperMesh != null && _sleeperMesh.GetSurfaceCount() > 0)
+            {
+                var sleeperInstance = new MeshInstance3D { Mesh = _sleeperMesh };
+                sleeperInstance.SetSurfaceOverrideMaterial(0, _sleeperMaterial);
+                AddChild(sleeperInstance);
+            }
+
+            // Ballast
+            if (_ballastMesh != null && _ballastMesh.GetSurfaceCount() > 0)
+            {
+                var ballastInstance = new MeshInstance3D { Mesh = _ballastMesh };
+                ballastInstance.SetSurfaceOverrideMaterial(0, _ballastMaterial);
+                AddChild(ballastInstance);
+            }
         }
 
         public void SetQualityLevel(int level)

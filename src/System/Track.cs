@@ -122,18 +122,22 @@ namespace OpenBVEAndroid.System
             double alpha = 0.5; // 0.5 = centripetal, 0 = uniform, 1 = chordal
 
             // For simplicity, using standard Catmull-Rom
+            float ft = (float)t;
+            float ft2 = (float)t2;
+            float ft3 = (float)t3;
+
             Vector3 pos = 0.5f * ((2 * p1.Position) +
-                (-p0.Position + p2.Position) * t +
-                (2 * p0.Position - 5 * p1.Position + 4 * p2.Position - p3.Position) * t2 +
-                (-p0.Position + 3 * p1.Position - 3 * p2.Position + p3.Position) * t3);
+                (-p0.Position + p2.Position) * ft +
+                (2 * p0.Position - 5 * p1.Position + 4 * p2.Position - p3.Position) * ft2 +
+                (-p0.Position + 3 * p1.Position - 3 * p2.Position + p3.Position) * ft3);
 
             Vector3 dir = Calc.Normalize(0.5f * ((-p0.Position + p2.Position) +
-                (2 * p0.Position - 5 * p1.Position + 4 * p2.Position - p3.Position) * t * 2 +
-                (-p0.Position + 3 * p1.Position - 3 * p2.Position + p3.Position) * t2 * 3));
+                (2 * p0.Position - 5 * p1.Position + 4 * p2.Position - p3.Position) * ft * 2 +
+                (-p0.Position + 3 * p1.Position - 3 * p2.Position + p3.Position) * ft2 * 3));
 
-            // Interpolate other properties
-            Vector3 up = Calc.Normalize(Vector3.Lerp(p1.Up, p2.Up, (float)t));
-            Vector3 side = Calc.Normalize(Vector3.Lerp(p1.Side, p2.Side, (float)t));
+            // Interpolate other properties - use Vector3.Lerp instance method (Godot 4.x)
+            Vector3 up = Calc.Normalize(p1.Up.Lerp(p2.Up, ft));
+            Vector3 side = Calc.Normalize(p1.Side.Lerp(p2.Side, ft));
 
             double curveRadius = Calc.Lerp(p1.CurveRadius, p2.CurveRadius, t);
             double cant = Calc.Lerp(p1.Cant, p2.Cant, t);
@@ -211,6 +215,7 @@ namespace OpenBVEAndroid.System
                 lateralBounce = Calc.Lerp(lateralBounce, lateralBounceTarget, 0.02);
 
                 var elem = Elements[i];
+                // Cast double to float for Vector3 construction
                 elem.InaccuracyOffset = new Vector3(
                     (float)(elem.Side.X * lateralBounce + elem.Side.X * gaugeSpread * 0.5),
                     (float)verticalBounce,
@@ -312,6 +317,7 @@ namespace OpenBVEAndroid.System
             var elem = GetElementAt(distance);
             double halfGauge = elem.Gauge * 0.5;
 
+            // Cast double to float for Vector3 operations
             Vector3 leftRail = elem.Position + elem.Side * (float)(-halfGauge) + elem.InaccuracyOffset;
             Vector3 rightRail = elem.Position + elem.Side * (float)halfGauge + elem.InaccuracyOffset;
 

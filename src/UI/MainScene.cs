@@ -1,5 +1,9 @@
 using System;
+using System.IO;
 using Godot;
+using OpenBVEAndroid.System;
+using OpenBVEAndroid.Rendering;
+using OpenBVEAndroid.Android;
 
 namespace OpenBVEAndroid.UI
 {
@@ -150,7 +154,12 @@ namespace OpenBVEAndroid.UI
         private void CreateTestRoute()
         {
             // Create a simple oval track for testing
-            var track = new Track();
+            var elements = new TrackElement[]
+            {
+                TrackElement.CreateStraight(Vector3.Zero, -Vector3.Forward, Vector3.Up),
+                TrackElement.CreateStraight(new Vector3(0, 0, -100), -Vector3.Forward, Vector3.Up)
+            };
+            var track = new Track(elements);
 
             // This would be populated by RouteManager in real usage
             // For now, just start simulation with empty route

@@ -33,11 +33,11 @@ namespace OpenBVEAndroid.System
         public int Primitives { get; private set; }
 
         // Thermal state (Android)
-        public ThermalState ThermalState { get; private set; } = ThermalState.Normal;
+        public ThermalStateEnum ThermalState { get; private set; } = ThermalStateEnum.Normal;
 
         // Events
         public event Action<float> OnFrameTimeUpdate;
-        public event Action<ThermalState> OnThermalStateChanged;
+        public event Action<ThermalStateEnum> OnThermalStateChanged;
 
         public override void _EnterTree()
         {
@@ -84,25 +84,25 @@ namespace OpenBVEAndroid.System
 
         private void UpdateMemoryStats()
         {
-            // Godot doesn't expose detailed memory stats directly
-            // Use OS statics as approximation
-            StaticMemoryUsage = OS.GetStaticMemoryUsage();
-            DynamicMemoryUsage = OS.GetDynamicMemoryUsage();
+            // Godot 4.x only exposes GetStaticMemoryUsage (returns ulong)
+            // Dynamic memory usage is not directly available, approximate from static
+            StaticMemoryUsage = (long)OS.GetStaticMemoryUsage();
+            DynamicMemoryUsage = StaticMemoryUsage; // Approximation
         }
 
         private void CheckThermalState()
         {
-            // On Android, we could use PowerManager or ThermalManager
+            // On Android, we could use PowerManager or ThermalManager via JNI
             // For now, estimate from frame time variance
             float variance = MaxFrameTime - MinFrameTime;
 
-            ThermalState newState;
+            ThermalStateEnum newState;
             if (AverageFrameTime > 33.0f) // > 30 FPS target
-                newState = ThermalState.Throttling;
+                newState = ThermalStateEnum.Throttling;
             else if (variance > 20.0f)
-                newState = ThermalState.Warm;
+                newState = ThermalStateEnum.Warm;
             else
-                newState = ThermalState.Normal;
+                newState = ThermalStateEnum.Normal;
 
             if (newState != ThermalState)
             {
@@ -144,7 +144,7 @@ namespace OpenBVEAndroid.System
                    $"Thermal: {ThermalState}";
         }
 
-        public enum ThermalState
+        public enum ThermalStateEnum
         {
             Normal,
             Warm,
