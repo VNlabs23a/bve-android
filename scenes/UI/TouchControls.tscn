@@ -1,0 +1,257 @@
+[gd_scene load_steps=12 format=3 uid="//uid://d7oq8k9j2m3n"]
+
+[ext_resource type="Script" path="res://src/UI/TouchControls.cs" id="1"]
+
+[node name="TouchControls" type="Control"]
+script = ExtResource("1")
+layout_mode = 3
+anchors_preset = 15
+
+[node name="ThrottleZone" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_left = 0.05
+anchor_top = 0.55
+anchor_right = 0.25
+anchor_bottom = 0.95
+margin_left = 0.0
+margin_top = 0.0
+margin_right = 0.0
+margin_bottom = 0.0
+
+[node name="ThrottleBackground" type="TextureRect" parent="ThrottleZone"]
+texture = ExtResource("2")
+layout_mode = 3
+anchors_preset = 15
+stretch_mode = 2
+
+[node name="ThrottleHandle" type="TextureRect" parent="ThrottleZone"]
+texture = ExtResource("3")
+layout_mode = 3
+anchors_preset = 0
+anchor_left = 0.2
+anchor_top = 0.5
+anchor_right = 0.2
+anchor_bottom = 0.5
+offset_left = -40
+offset_top = -40
+offset_right = 40
+offset_bottom = 40
+
+[node name="NotchIndicators" type="VBoxContainer" parent="ThrottleZone"]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20
+offset_top = 0
+offset_right = 20
+offset_bottom = 0
+
+[node name="Notch8" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch7" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch6" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch5" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch4" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch3" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch2" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch1" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("4")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="Notch0" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("5")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB1" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB2" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB3" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB4" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB5" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB6" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB7" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="NotchB8" type="TextureRect" parent="NotchIndicators"]
+texture = ExtResource("6")
+custom_minimum_size = Vector2(40, 10)
+
+[node name="EBrakeButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.8
+anchor_top = 0.75
+anchor_right = 0.8
+anchor_bottom = 0.75
+offset_left = -60
+offset_top = -60
+offset_right = 60
+offset_bottom = 60
+texture_normal = ExtResource("7")
+texture_pressed = ExtResource("8")
+
+[node name="HornButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.62
+anchor_top = 0.75
+anchor_right = 0.62
+anchor_bottom = 0.75
+offset_left = -60
+offset_top = -60
+offset_right = 60
+offset_bottom = 60
+texture_normal = ExtResource("9")
+texture_pressed = ExtResource("10")
+
+[node name="ReverserButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.05
+anchor_top = 0.1
+anchor_right = 0.05
+anchor_bottom = 0.1
+offset_left = -50
+offset_top = -50
+offset_right = 50
+offset_bottom = 50
+texture_normal = ExtResource("11")
+texture_pressed = ExtResource("12")
+
+[node name="ReverserLabel" type="Label" parent="ReverserButton"]
+layout_mode = 3
+anchors_preset = 15
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30
+offset_top = -15
+offset_right = 30
+offset_bottom = 15
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "FWD"
+
+[node name="LightsButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.22
+anchor_top = 0.1
+anchor_right = 0.22
+anchor_bottom = 0.1
+offset_left = -50
+offset_top = -50
+offset_right = 50
+offset_bottom = 50
+texture_normal = ExtResource("13")
+texture_pressed = ExtResource("14")
+
+[node name="LightsLabel" type="Label" parent="LightsButton"]
+layout_mode = 3
+anchors_preset = 15
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30
+offset_top = -15
+offset_right = 30
+offset_bottom = 15
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "OFF"
+
+[node name="CameraButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.45
+anchor_top = 0.1
+anchor_right = 0.45
+anchor_bottom = 0.1
+offset_left = -50
+offset_top = -50
+offset_right = 50
+offset_bottom = 50
+texture_normal = ExtResource("15")
+texture_pressed = ExtResource("16")
+
+[node name="CameraLabel" type="Label" parent="CameraButton"]
+layout_mode = 3
+anchors_preset = 15
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30
+offset_top = -15
+offset_right = 30
+offset_bottom = 15
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "CAB"
+
+[node name="PauseButton" type="TextureButton" parent="."]
+layout_mode = 3
+anchors_preset = 9
+anchor_left = 0.92
+anchor_top = 0.05
+anchor_right = 0.92
+anchor_bottom = 0.05
+offset_left = -40
+offset_top = -40
+offset_right = 40
+offset_bottom = 40
+texture_normal = ExtResource("17")
+texture_pressed = ExtResource("18")
+
+[node name="LookZone" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_left = 0.3
+anchor_top = 0.2
+anchor_right = 1.0
+anchor_bottom = 0.9
+mouse_filter = 1

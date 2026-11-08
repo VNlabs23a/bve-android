@@ -1,0 +1,52 @@
+; Engine configuration for OpenBVE-Android
+[application]
+config/name="OpenBVE Android"
+config/icon="res://assets/icons/icon.png"
+run/main_scene="res://scenes/Main.tscn"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/resizable=true
+window/mode=2
+window/vsync_mode=1
+
+[rendering]
+renderer/rendering_method="mobile"
+rendering_2d/batching/use_batching=true
+rendering_2d/batching/max_join_item_commands=100
+rendering/quality/shadows/filter_mode=1
+rendering/quality/shadows/directional_shadow_count=2
+rendering/environment/defaults/default_clear_color=Color(0.2, 0.3, 0.4, 1)
+rendering/limits/time/ticks_per_second=60
+
+[physics]
+common/physics_ticks_per_second=60
+
+[input]
+ui_accept={
+"deadzone": 0.5,
+"events": [{"type": "Key", "keycode": 16777221}, {"type": "JoyButton", "button": 0}]
+}
+ui_cancel={
+"deadzone": 0.5,
+"events": [{"type": "Key", "keycode": 16777217}, {"type": "JoyButton", "button": 1}]
+}
+touchscreen/emulate_mouse_from_touch=true
+
+[gui]
+theme/default_theme="res://assets/themes/default_theme.tres"
+
+[autoload]
+Simulation="res://src/System/Simulation.cs"
+InputManager="res://src/System/InputManager.cs"
+QualityManager="res://src/System/QualityManager.cs"
+PerformanceMonitor="res://src/System/PerformanceMonitor.cs"
+ModManager="res://src/System/ModManager.cs"
+VirtualFS="res://src/System/VirtualFS.cs"
+AndroidBridge="res://src/Android/AndroidBridge.cs"
+StorageManager="res://src/Android/StorageManager.cs"
+LifecycleManager="res://src/Android/LifecycleManager.cs"
+
+[mono]
+enabled=true

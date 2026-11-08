@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="432dp"
+    android:height="432dp"
+    android:viewportWidth="432"
+    android:viewportHeight="432">
+    <!-- Simplified train silhouette for monochrome -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M80,300 L352,300 L352,350 L80,350 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M120,240 L312,240 L312,300 L120,300 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M140,180 L292,180 L292,240 L140,240 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M110,350 A50,50 0 1,1 110,450 A50,50 0 1,1 110,350" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M322,350 A50,50 0 1,1 322,450 A50,50 0 1,1 322,350" />
+</vector>
