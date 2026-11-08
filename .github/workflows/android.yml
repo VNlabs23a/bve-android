@@ -22,6 +22,10 @@ env:
   GODOT_VERSION: '4.3'
   GODOT_CHANNEL: 'stable'
   PROJECT_PATH: '.'
+  ANDROID_SDK_ROOT: '/opt/android-sdk'
+  ANDROID_NDK_VERSION: '27.0.12077973'
+  ANDROID_API_LEVEL: '34'
+  ANDROID_BUILD_TOOLS: '34.0.0'
 
 jobs:
   build-debug:
@@ -47,22 +51,32 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          ndk-version: '27.0.12077973'
-          build-tools: '34.0.0'
-          cmdline-tools: 'latest'
-          cache: gradle
+      - name: Install Android SDK
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mv cmdline-tools latest
+          rm commandlinetools-linux-11076708_latest.zip
+          yes | ./latest/bin/sdkmanager --licenses
+          ./latest/bin/sdkmanager "platforms;android-${ANDROID_API_LEVEL}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK_VERSION}" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_PATH
 
       - name: Verify Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
           ls -la "$ANDROID_HOME"/platforms/ || true
           ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
+          sdkmanager --list | head -30
 
       - name: Cache Godot
         id: cache-godot
@@ -161,22 +175,32 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          ndk-version: '27.0.12077973'
-          build-tools: '34.0.0'
-          cmdline-tools: 'latest'
-          cache: gradle
+      - name: Install Android SDK
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mv cmdline-tools latest
+          rm commandlinetools-linux-11076708_latest.zip
+          yes | ./latest/bin/sdkmanager --licenses
+          ./latest/bin/sdkmanager "platforms;android-${ANDROID_API_LEVEL}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK_VERSION}" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_PATH
 
       - name: Verify Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
           ls -la "$ANDROID_HOME"/platforms/ || true
           ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
+          sdkmanager --list | head -30
 
       - name: Cache Godot
         id: cache-godot
@@ -293,22 +317,32 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          api-level: 34
-          ndk-version: '27.0.12077973'
-          build-tools: '34.0.0'
-          cmdline-tools: 'latest'
-          cache: gradle
+      - name: Install Android SDK
+        run: |
+          set -euo pipefail
+          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
+          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          wget -q "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q commandlinetools-linux-11076708_latest.zip
+          mv cmdline-tools latest
+          rm commandlinetools-linux-11076708_latest.zip
+          yes | ./latest/bin/sdkmanager --licenses
+          ./latest/bin/sdkmanager "platforms;android-${ANDROID_API_LEVEL}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK_VERSION}" "platform-tools"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_ENV
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/ndk/${ANDROID_NDK_VERSION}" >> $GITHUB_PATH
 
       - name: Verify Android SDK
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
           echo "ANDROID_NDK_HOME=$ANDROID_NDK_HOME"
           ls -la "$ANDROID_HOME"/platforms/ || true
           ls -la "$ANDROID_NDK_HOME"/toolchains/ || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --list | head -20
+          sdkmanager --list | head -30
 
       - name: Cache Godot
         id: cache-godot
